@@ -1,0 +1,133 @@
+import time
+import datetime
+import subprocess
+import cv2
+import threading
+update_img_path = './image/pc.jpg'
+
+width = 2560
+height = 1440
+
+# cap_name = "BisonCam,NB Pro"
+# cap_index = 0
+
+cap_name = 'WEB CAM'
+cap_index = 1
+
+
+class VideoRecorder:
+    def __init__(self):
+        print("录像程序正在初始化")
+        self.default_fps = 30
+        self.default_resolution = f"{width}x{height}"
+        self.default_cap_name = cap_name
+        self.default_cap_index = cap_index
+
+        self.is_recording = False
+        self.curr_fps = 0
+        self.out_dir = './out'
+        self.process = None
+        self.cap_show_lock = threading.Lock()
+
+        self.now_status = 'none'
+        print("录像程序初始化完成")
+    
+    def change_status(self, status):
+        if status == 'none':
+            self.now_status = 'none'
+        elif status == 'show':
+            self.now_status = 'show'
+        elif status == 'run':
+            self.now_status = 'run'
+        else:
+            raise Exception("状态转换出错")
+    
+    def make_avi_file_name(self):
+        # 获取当前时间
+        current_time = datetime.datetime.now()
+        # 格式化时间为 "yyyy-mm-dd-hhmmss" 格式
+        file_name = current_time.strftime("%Y-%m-%d-%H%M%S")
+        file_name += '.avi'
+        return file_name
+
+    def open_recording(self):
+        self.is_recording = True
+    def close_recording(self):
+        self.is_recording = False
+    
+    def start(self):
+        if not self.is_recording:
+            if self.cap_show_lock.acquire(blocking=False):
+                    self.cap_show_lock.release()
+                    self.open_recording()
+                    ffmpeg_cmd = [
+                        'ffmpeg',
+                        '-f', 'dshow',  # 使用 DirectShow 捕获摄像头
+                        '-i', f'video={self.default_cap_name}',  # 替换为你的摄像头设备名称
+                        '-r', str(self.default_fps),  # 设置帧率
+                        '-s', self.default_resolution,  # 设置分辨率
+                        '-q:v', '1',                       # 设置视频质量
+                        self.out_dir + '/' + self.make_avi_file_name()  # 输出文件名
+                    ]
+                    self.process = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
+                    print(f"摄像头 首次 启动")
+                    self.change_status("run")
+                    return True
+            else:
+                print(f"摄像头 被占用")
+                return False
+        else:
+            print(f"摄像头 已经 启动")
+            return True
+
+    def stop(self):
+        if self.is_recording:
+            self.close_recording()
+            if self.process:
+                self.process.stdin.write(b'q')  # 发送 'q' 给 ffmpeg，结束录制
+                self.process.stdin.flush()
+                self.process.wait()  # 等待进程结束
+                self.process = None
+                self.change_status("none")
+                print("录制结束")
+        print("已经关闭")
+    
+    def capture_and_save_one_frame(self):
+        if self.is_recording:
+            print("SHOW:摄像头被占用")
+            return False
+        try:
+            # 打开摄像头
+            self.cap_show_lock.acquire(blocking=False)
+            self.change_status('show')
+            cap = cv2.VideoCapture(self.default_cap_index)
+
+            if not cap.isOpened():
+                print("SHOW:无法打开摄像头")
+                return
+
+            # 读取一帧图像
+            ret, frame = cap.read()
+
+            if ret:
+                # 保存图像
+                cv2.imwrite(update_img_path, frame)
+                print("SHOW:图像已保存为 {}".format(update_img_path))
+            else:
+                print("SHOW:无法捕获图像")
+
+            # 释放摄像头
+            self.change_status('none')
+            cap.release()
+            self.cap_show_lock.release()
+        except Exception as e:
+            return False
+
+if __name__ == "__main__":
+    recorder = VideoRecorder()
+    recorder.start()
+    time.sleep(5)  # 假设用户决定录制5秒，实际可以根据需要更长或更短
+    input("按下 Enter 停止录像...")
+    recorder.stop()
+
+

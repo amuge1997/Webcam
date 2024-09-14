@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮操作</title>
+    <style>
+        .button-container {
+            text-align: center;
+            margin-top: 100px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+    <style>
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <div class="text">状态: {{ text }}</div>
+        <img src="data:image/jpeg;base64,{{ image_data }}" alt="图像" />
+        <form action="/open" method="post">
+            <button type="submit">打开</button>
+        </form>
+        <form action="/close" method="post">
+            <button type="submit">关闭</button>
+        </form>
+        <form action="/update" method="post">
+            <button type="submit">更新</button>
+        </form>
+        <form action="/show" method="post">
+            <button type="submit">SHOW</button>
+        </form>
+        <!-- <form action="/exit" method="post">
+            <button type="submit">退出</button>
+        </form> -->
+    </div>
+</body>
+</html>
