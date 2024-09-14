@@ -1,1 +1,1 @@
-ffmpeg录像,cv截图,需要新建一个out目录输出视频
+ffmpeg录像,ffmpeg截图,需要新建一个out目录输出视频
