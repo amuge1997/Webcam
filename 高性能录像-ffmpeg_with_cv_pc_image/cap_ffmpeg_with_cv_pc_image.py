@@ -98,28 +98,28 @@ class VideoRecorder:
             return False
         try:
             # 打开摄像头
-            self.cap_show_lock.acquire(blocking=False)
-            self.change_status('show')
-            cap = cv2.VideoCapture(self.default_cap_index)
+            if self.cap_show_lock.acquire(blocking=False):
+                self.change_status('show')
+                cap = cv2.VideoCapture(self.default_cap_index)
 
-            if not cap.isOpened():
-                print("SHOW:无法打开摄像头")
-                return
+                if not cap.isOpened():
+                    print("SHOW:无法打开摄像头")
+                    return
 
-            # 读取一帧图像
-            ret, frame = cap.read()
+                # 读取一帧图像
+                ret, frame = cap.read()
 
-            if ret:
-                # 保存图像
-                cv2.imwrite(update_img_path, frame)
-                print("SHOW:图像已保存为 {}".format(update_img_path))
-            else:
-                print("SHOW:无法捕获图像")
+                if ret:
+                    # 保存图像
+                    cv2.imwrite(update_img_path, frame)
+                    print("SHOW:图像已保存为 {}".format(update_img_path))
+                else:
+                    print("SHOW:无法捕获图像")
 
-            # 释放摄像头
-            self.change_status('none')
-            cap.release()
-            self.cap_show_lock.release()
+                # 释放摄像头
+                self.change_status('none')
+                cap.release()
+                self.cap_show_lock.release()
         except Exception as e:
             return False
 

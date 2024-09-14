@@ -71,9 +71,14 @@ def show_action():
     print("SHOW操作执行")
     result = recorder.capture_and_save_one_frame()
     if result:
-        text = 'Success'
+        text = '开始截图'
     else:
-        text = 'Fail'
+        if recorder.now_status == 'none':
+            text = '停止中'
+        elif recorder.now_status == 'run':
+            text = '录像中'
+        elif recorder.now_status == 'show':
+            text = '截图中'
     image_data = get_image_data()
     return render_template('index.html', image_data=image_data, text=text)
 
