@@ -39,8 +39,9 @@
     <div class="button-container">
         <div class="text">状态: {{ text }}</div>
         <img src="data:image/jpeg;base64,{{ image_data }}" alt="图像" />
+        <p style="color: {{ 'black' if is_muted else 'red' }};">{{ '音量已经关闭' if is_muted else '音量未关闭' }}</p>
         <form action="/open" method="post">
-            <button type="submit">打开</button>
+            <button  type="submit">打开</button>
         </form>
         <form action="/close" method="post">
             <button type="submit">关闭</button>

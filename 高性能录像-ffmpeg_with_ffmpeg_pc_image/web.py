@@ -4,9 +4,9 @@ from PIL import Image
 import base64
 import numpy as np
 from cap_ffmpeg_with_ffmpeg_pc_image import VideoRecorder, update_img_path, cap_index
+from mute_windows import mute_windows, is_muted, get_system_volume
 
-# from mute import mute_windows
-# mute_windows()
+mute_windows()
 
 
 app = Flask(__name__)
@@ -36,7 +36,7 @@ def open_action():
         text = '正在打开'
     else:
         text = '摄像头被占用'
-    return render_template('index.html', image_data=image_data, text=text)
+    return render_template('index.html', image_data=image_data, text=text, is_muted=is_muted())
 
 # 关闭按钮的后台函数
 @app.route('/close', methods=['POST'])
@@ -50,12 +50,13 @@ def close_action():
         text = '录像中'
     elif recorder.now_status == 'show':
         text = '截图中'
-    return render_template('index.html', image_data=image_data, text=text)
+    return render_template('index.html', image_data=image_data, text=text, is_muted=is_muted())
 
 # 更新按钮的后台函数
 @app.route('/update', methods=['POST'])
 def update_action():
     print("更新操作执行")
+    mute_windows()
     image_data = get_image_data()
     if recorder.now_status == 'none':
         text = '停止中'
@@ -63,7 +64,7 @@ def update_action():
         text = '录像中'
     elif recorder.now_status == 'show':
         text = '截图中'
-    return render_template('index.html', image_data=image_data, text=text)
+    return render_template('index.html', image_data=image_data, text=text, is_muted=is_muted())
 
 
 @app.route('/show', methods=['POST'])
@@ -80,13 +81,14 @@ def show_action():
         elif recorder.now_status == 'show':
             text = '截图中'
     image_data = get_image_data()
-    return render_template('index.html', image_data=image_data, text=text)
+    return render_template('index.html', image_data=image_data, text=text, is_muted=is_muted())
+
 
 # 首页，包含四个按钮
 @app.route('/')
 def index():
     image_data = get_image_data()
-    return render_template('index.html', image_data=image_data, text="初始化")
+    return render_template('index.html', image_data=image_data, text="初始化", is_muted=is_muted())
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
